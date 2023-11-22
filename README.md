@@ -3,7 +3,7 @@
  A simple key overlay for osu! streaming
  
 Edit `config.ini` to set your keymap
-# [Download Link](https://github.com/Friedchicken-42/KeyOverlay/releases/tag/v2.2)
+# [Download Link](https://github.com/glacc/KeyOverlay/releases)
 IF YOU ARE HAVING PROBLEMS WITH THE PROGRAM WHEN OSU! IS ON FULLSCREEN, TRY USING GAME CAPTURE INSTEAD OF WINDOW CAPTURE IN OBS!
 
 
@@ -13,6 +13,8 @@ IF YOU ARE HAVING PROBLEMS WITH THE PROGRAM WHEN OSU! IS ON FULLSCREEN, TRY USIN
 height - Used to set the height of the window.
 
 keySize - Changes the size of the key (excluding border).
+
+keyFadeTime - Adjusts the fading time after releasing the key.
 
 barSpeed - Adjusts the speed at which the bars travel upwards.
 

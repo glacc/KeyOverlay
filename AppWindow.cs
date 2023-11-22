@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -7,6 +8,7 @@ using System.Threading;
 using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
+using static SFML.Window.Keyboard;
 
 namespace KeyOverlay
 {
@@ -16,6 +18,9 @@ namespace KeyOverlay
         private Vector2u _size;
         private List<Key> _keyList;
         private List<RectangleShape> _squareList;
+        private List<int> _keyPressFadeList;
+        private int _keyFadeTime;
+        private float _keyFadeExp;
         private float _barSpeed;
         private float _ratioX;
         private float _ratioY;
@@ -48,8 +53,24 @@ namespace KeyOverlay
                 _backgroundColor = CreateItems.CreateColor(general["backgroundColor"]);
                 _maxFPS = uint.Parse(general["fps"]);
 
-                //create keys which will be used to create the squares and text
-                _keyList = new List<Key>();
+				/*
+                _keyFadeTime = int.Parse(general["keyFadeTime"]);
+                _keyFadeExp = float.Parse(general["keyFadeExp"]);
+                if (_keyFadeTime < 0)
+                    _keyFadeTime = 1;
+                if (_keyFadeExp < 1f)
+                    _keyFadeExp = 1f;
+                */
+				string keyFadeTimeStr;
+                if (!general.TryGetValue("keyFadeTime", out keyFadeTimeStr))
+                    _keyFadeTime = 7;
+                else
+                    _keyFadeTime = int.Parse(general["keyFadeTime"]);
+                _keyFadeExp = 1.0f;
+
+				//create keys which will be used to create the squares and text
+				_keyList = new List<Key>();
+                _keyPressFadeList = new List<int>();
                 foreach (var item in _config["Keys"])
                 {
                     var key = new Key(item.Value);
@@ -64,6 +85,7 @@ namespace KeyOverlay
                         key.setSize(uint.Parse(_config["Size"][item.Key]));
 
                     _keyList.Add(key);
+                    _keyPressFadeList.Add(0);
                 }
 
                 //create squares and add them to _staticDrawables list
@@ -143,12 +165,25 @@ namespace KeyOverlay
                                 !key.isKey && Mouse.IsButtonPressed(key.MouseButton))
                         {
                             key.Hold++;
+
+                            _keyPressFadeList[i] = _keyFadeTime;
                             _squareList[i].FillColor = key._colorPressed;
                         }
                         else
                         {
                             key.Hold = 0;
-                            _squareList[i].FillColor = _backgroundColor;
+
+							float fadeFactor = (float)Math.Pow((float)_keyPressFadeList[i] / (float)_keyFadeTime, _keyFadeExp);
+							byte red = (byte)((float)_backgroundColor.R + ((float)key._colorPressed.R - (float)_backgroundColor.R) * fadeFactor);
+							byte grn = (byte)((float)_backgroundColor.G + ((float)key._colorPressed.G - (float)_backgroundColor.G) * fadeFactor);
+							byte blu = (byte)((float)_backgroundColor.B + ((float)key._colorPressed.B - (float)_backgroundColor.B) * fadeFactor);
+							byte alp = (byte)((float)_backgroundColor.A + ((float)key._colorPressed.A - (float)_backgroundColor.A) * fadeFactor);
+
+							Color _colorFaded = new Color(red, grn, blu, alp);
+							_squareList[i].FillColor = _colorFaded;
+
+                            if (_keyPressFadeList[i] > 0)
+                                _keyPressFadeList[i]--;
                         }
                     }
 
