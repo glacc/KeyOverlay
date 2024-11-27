@@ -16,11 +16,14 @@ namespace KeyOverlay
     {
         private RenderWindow _window;
         private Vector2u _size;
+
         private List<Key> _keyList;
-        private List<RectangleShape> _squareList;
         private List<int> _keyPressFadeList;
         private int _keyFadeTime;
         private float _keyFadeExp;
+
+        private List<RectangleShape> _squareList;
+
         private float _barSpeed;
         private float _ratioX;
         private float _ratioY;
@@ -34,7 +37,7 @@ namespace KeyOverlay
         private Clock _clock = new();
         private Config _config;
         private object _lock = new object();
-
+        private FadingTexture _fadingTexture;
 
         public AppWindow()
         {
@@ -122,6 +125,8 @@ namespace KeyOverlay
                     _fading = true;
                 if (general["counter"] == "yes")
                     _counter = true;
+
+                _fadingTexture = new FadingTexture(_backgroundColor, _size.X, _ratioY);
             }
         }
 
@@ -134,17 +139,6 @@ namespace KeyOverlay
         {
             _window.Closed += OnClose;
             _window.SetFramerateLimit(_maxFPS);
-
-            //Creating a sprite for the fading effect
-            var fadingList = Fading.GetBackgroundColorFadingTexture(_backgroundColor, _size.X, _ratioY);
-            var fadingTexture = new RenderTexture(_size.X, (uint)(255 * 2 * _ratioY));
-            fadingTexture.Clear(Color.Transparent);
-            if (_fading)
-                foreach (var sprite in fadingList)
-                    fadingTexture.Draw(sprite);
-            fadingTexture.Display();
-            var fadingSprite = new Sprite(fadingTexture.Texture);
-
 
             while (_window.IsOpen)
             {
@@ -207,7 +201,7 @@ namespace KeyOverlay
                         }
                         foreach (var bar in key.BarList) _window.Draw(bar);
                     }
-                    _window.Draw(fadingSprite);
+                    _window.Draw(_fadingTexture.GetSprite());
                 }
                 _window.Display();
             }
